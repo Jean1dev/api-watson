@@ -3,6 +3,8 @@ const { Router } = require('express')
 
 const routes = new Router()
 
+routes.get('/health-status', (req, res) => res.json({STATUS: 'UP'}))
+
 routes.get('/session', watson.createSession)
 
 routes.post('/message', watson.sendMessage)
