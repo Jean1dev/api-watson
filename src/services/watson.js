@@ -31,10 +31,11 @@ function getResponse(responses, gen) {
         description = '<div>' + gen.description + '</div>'
     }
     if (gen.response_type === 'image') {
-        var img = '<div><img src="' + gen.source + '" width="300"></div>'
+        let img = `<div><img src={'${gen.source}'} width={300}></div>`
         responses.push({
             type: gen.response_type,
-            innerhtml: title + description + img
+            innerhtml: title + description + img,
+            data: { img: gen.source, title }
         })
     } else if (gen.response_type === 'text') {
         responses.push({
@@ -53,17 +54,21 @@ function getResponse(responses, gen) {
             preference = gen.preference;
         }
 
-        var list = getOptions(gen.options, preference)
+        let result = getOptions(gen.options, preference)
+        let list = result.innerhtml
         responses.push({
             type: gen.response_type,
-            innerhtml: title + description + list
+            innerhtml: title + description + list,
+            text: title + gen.description,
+            data: result
         })
     }
 }
 
 function getOptions(optionsList, preference) {
-    var list = ''
-    var i = 0
+    let arrOptions = []
+    let list = ''
+    let i = 0
     if (optionsList !== null) {
         if (preference === 'text') {
             list = '<ul>'
@@ -71,6 +76,10 @@ function getOptions(optionsList, preference) {
                 if (optionsList[i].value) {
                     list += '<li><div class="options-list" onclick="ConversationPanel.sendMessage(\'' +
                         optionsList[i].value.input.text + '\');" >' + optionsList[i].label + '</div></li>'
+                    arrOptions.push({
+                        text: optionsList[i].value.input.text,
+                        label: optionsList[i].label
+                    })
                 }
             }
             list += '</ul>'
@@ -81,17 +90,22 @@ function getOptions(optionsList, preference) {
                     var item = '<div class="options-button" onclick="ConversationPanel.sendMessage(\'' +
                         optionsList[i].value.input.text + '\');" >' + optionsList[i].label + '</div>'
                     list += item
+                    arrOptions.push({
+                        text: optionsList[i].value.input.text,
+                        label: optionsList[i].label
+                    })
                 }
             }
         }
     }
-    return list
+    arrOptions.innerhtml = list
+    return arrOptions
 }
 
 class Watson {
 
     createSession(req, res) {
-        assistant.createSession({assistantId: process.env.ASSISTANT_ID}, (err, resp) => {
+        assistant.createSession({ assistantId: process.env.ASSISTANT_ID }, (err, resp) => {
             if (err) return res.send(err)
 
             const session = resp.result.session_id
@@ -100,7 +114,9 @@ class Watson {
     }
 
     sendMessage(req, res) {
-        mongoUtils.asyncSaveMessage(req.body.message)
+        if (req.body.message) {
+            mongoUtils.asyncSaveMessage(req.body.message)
+        }
 
         let assistantId = process.env.ASSISTANT_ID
         let payload = {
