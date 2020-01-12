@@ -9,19 +9,99 @@ const assistant = new AssistantV2({
     url: process.env.ASSISTANT_URL,
 })
 
+function buildMessageElements(newPayload) {
+    let responses = []
+    if (newPayload.hasOwnProperty('output')) {
+        if (newPayload.output.hasOwnProperty('generic')) {
+            let generic = newPayload.output.generic
+            generic.forEach(gen => {
+                getResponse(responses, gen)
+            })
+        }
+    }
+    return responses
+}
+
+function getResponse(responses, gen) {
+    var title = '', description = ''
+    if (gen.hasOwnProperty('title')) {
+        title = gen.title
+    }
+    if (gen.hasOwnProperty('description')) {
+        description = '<div>' + gen.description + '</div>'
+    }
+    if (gen.response_type === 'image') {
+        var img = '<div><img src="' + gen.source + '" width="300"></div>'
+        responses.push({
+            type: gen.response_type,
+            innerhtml: title + description + img
+        })
+    } else if (gen.response_type === 'text') {
+        responses.push({
+            type: gen.response_type,
+            text: gen.text
+        })
+    } else if (gen.response_type === 'pause') {
+        responses.push({
+            type: gen.response_type,
+            time: gen.time,
+            typing: gen.typing
+        })
+    } else if (gen.response_type === 'option') {
+        var preference = 'text'
+        if (gen.hasOwnProperty('preference')) {
+            preference = gen.preference;
+        }
+
+        var list = getOptions(gen.options, preference)
+        responses.push({
+            type: gen.response_type,
+            innerhtml: title + description + list
+        })
+    }
+}
+
+function getOptions(optionsList, preference) {
+    var list = ''
+    var i = 0
+    if (optionsList !== null) {
+        if (preference === 'text') {
+            list = '<ul>'
+            for (i = 0; i < optionsList.length; i++) {
+                if (optionsList[i].value) {
+                    list += '<li><div class="options-list" onclick="ConversationPanel.sendMessage(\'' +
+                        optionsList[i].value.input.text + '\');" >' + optionsList[i].label + '</div></li>'
+                }
+            }
+            list += '</ul>'
+        } else if (preference === 'button') {
+            list = '<br>'
+            for (i = 0; i < optionsList.length; i++) {
+                if (optionsList[i].value) {
+                    var item = '<div class="options-button" onclick="ConversationPanel.sendMessage(\'' +
+                        optionsList[i].value.input.text + '\');" >' + optionsList[i].label + '</div>'
+                    list += item
+                }
+            }
+        }
+    }
+    return list
+}
+
 class Watson {
 
     createSession(req, res) {
-        assistant.createSession({ assistantId: process.env.ASSISTANT_ID }, (err, resp) => {
+        assistant.createSession({assistantId: process.env.ASSISTANT_ID}, (err, resp) => {
             if (err) return res.send(err)
 
-            return res.json(resp)
+            const session = resp.result.session_id
+            return res.json({ session })
         })
     }
 
     sendMessage(req, res) {
         mongoUtils.asyncSaveMessage(req.body.message)
-        
+
         let assistantId = process.env.ASSISTANT_ID
         let payload = {
             assistantId: assistantId,
@@ -38,7 +118,8 @@ class Watson {
                 return res.status(status).json(err)
             }
 
-            return res.json(data)
+            const message = buildMessageElements(data.result)
+            return res.json(message)
         })
     }
 }
