@@ -5,10 +5,11 @@ const client = new MongoClient(uri, { useNewUrlParser: true });
 
 class MongoUtils {
 
-    asyncSaveMessage(message) {
+    asyncSaveMessage(data) {
         client.connect(err => {
             const object = {
-                message,
+                message: data.message,
+                props: data.props,
                 date: new Date()
             }
             client.db(DATABASE_NAME).collection("messages").insertOne(object)

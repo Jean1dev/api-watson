@@ -115,7 +115,7 @@ class Watson {
 
     sendMessage(req, res) {
         if (req.body.message) {
-            mongoUtils.asyncSaveMessage(req.body.message)
+            mongoUtils.asyncSaveMessage(req.body)
         }
 
         let assistantId = process.env.ASSISTANT_ID
