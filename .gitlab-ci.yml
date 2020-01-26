@@ -2,6 +2,7 @@ image: node:latest
 
 stages:
   - build
+  - deploy_prod
 
 cache:
   paths:
@@ -14,3 +15,15 @@ install_dependencies:
   artifacts:
     paths:
       - node_modules/
+
+test_environment:
+  stage: deploy_prod
+  image: ruby:latest
+  only:
+    - master
+  when: manual
+  script:
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=api-assistant --api-key=$HEROKU_API_KEY
