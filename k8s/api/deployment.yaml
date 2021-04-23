@@ -23,7 +23,7 @@ spec:
     spec:            
       containers:
       - name: watson        
-        image: jeanlucafp/watsonapi
+        image: jeanlucafp/watsonapi:latest
         ports:
         - containerPort: 8082        
         env:
