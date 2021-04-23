@@ -41,10 +41,13 @@ jobs:
             k8s/mongodb/deployment.yaml
             k8s/mongodb/service.yaml
 
-      - name: Configurando manifestos
+      - name: Configurando ASSISTANT_ID
         run : sed -i 's/<ASSISTANT_ID>/'${{ secrets.ASSISTANT_ID }}'/g' k8s/api/deployment.yaml
+      - name: Configurando ASSISTANT_IAM_APIKEY
         run : sed -i 's/<ASSISTANT_IAM_APIKEY>/'${{ secrets.ASSISTANT_IAM_APIKEY }}'/g' k8s/api/deployment.yaml
+      - name: Configurando ASSISTANT_IAM_URL
         run : sed -i 's/<ASSISTANT_IAM_URL>/'${{ secrets.ASSISTANT_IAM_URL }}'/g' k8s/api/deployment.yaml
+      - name: Configurando ASSISTANT_URL
         run : sed -i 's/<ASSISTANT_URL>/'${{ secrets.ASSISTANT_URL }}'/g' k8s/api/deployment.yaml
       - name: Deploy API
         uses: Azure/k8s-deploy@v1.3
