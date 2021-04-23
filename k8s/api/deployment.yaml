@@ -34,6 +34,6 @@ spec:
           - name: ASSISTANT_IAM_APIKEY
             value: <ASSISTANT_IAM_APIKEY>
           - name: ASSISTANT_IAM_URL
-            value: <ASSISTANT_IAM_URL>
+            value: https://gateway.watsonplatform.net/assistant/api
           - name: ASSISTANT_URL
-            value: <ASSISTANT_URL>
+            value: https://gateway.watsonplatform.net/assistant/api/v2/assistants/8fb6d332-9d2e-4cbd-8b70-eb3d84fcd391/sessions
