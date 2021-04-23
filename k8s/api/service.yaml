@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: watson
+spec:
+  selector:
+    app: watson
+  ports:
+  - port: 8082
+    targetPort: 8082
+    nodePort: 30001
+  type: LoadBalancer

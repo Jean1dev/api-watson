@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-watson
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "25%"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: watson
+  template: 
+    metadata:  
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8082"              
+      labels:
+        app: watson
+    spec:            
+      containers:
+      - name: watson        
+        image: jeanlucafp/watsonapi
+        ports:
+        - containerPort: 8082        
+        env:
+          - name: MONGODB_URI
+            value: mongodb://mongodbuser:mongodbpwd@mongo-service:27017/admin
+          - name: ASSISTANT_ID
+            value: <ASSISTANT_ID>
+          - name: ASSISTANT_IAM_APIKEY
+            value: <ASSISTANT_IAM_APIKEY>
+          - name: ASSISTANT_IAM_URL
+            value: <ASSISTANT_IAM_URL>
+          - name: ASSISTANT_URL
+            value: <ASSISTANT_URL>

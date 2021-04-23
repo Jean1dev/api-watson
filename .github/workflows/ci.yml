@@ -1,0 +1,55 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Deploy to kubernetes
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        uses: docker/login-action@v1.8.0
+        with:
+          username: ${{  secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PWD }}
+      - name: Criando a Imagem Docker
+        uses: docker/build-push-action@v2.3.0
+        with:
+          tags: |
+            jeanlucafp/watsonapi:latest
+            jeanlucafp/watsonapi:${{ github.run_number }}
+          push: true
+  CD:
+    needs: [CI]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Definindo o contexto do Kubernetes
+        uses: Azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.K8S_CONFIG }}
+      - name: Deploy MongoDB
+        uses: Azure/k8s-deploy@v1.3
+        with:
+          manifests: |
+            k8s/mongodb/deployment.yaml
+            k8s/mongodb/service.yaml
+
+      - name: Configurando manifestos
+        run : sed -i 's/<ASSISTANT_ID>/'${{ secrets.ASSISTANT_ID }}'/g' k8s/api/deployment.yaml
+        run : sed -i 's/<ASSISTANT_IAM_APIKEY>/'${{ secrets.ASSISTANT_IAM_APIKEY }}'/g' k8s/api/deployment.yaml
+        run : sed -i 's/<ASSISTANT_IAM_URL>/'${{ secrets.ASSISTANT_IAM_URL }}'/g' k8s/api/deployment.yaml
+        run : sed -i 's/<ASSISTANT_URL>/'${{ secrets.ASSISTANT_URL }}'/g' k8s/api/deployment.yaml
+      - name: Deploy API
+        uses: Azure/k8s-deploy@v1.3
+        with:
+          images: 'jeanlucafp/watsonapi:${{ github.run_number }}'
+          manifests: |
+            k8s/api/deployment.yaml
+            k8s/api/service.yaml        
