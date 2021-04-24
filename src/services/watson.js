@@ -6,7 +6,7 @@ const assistant = new AssistantV2({
     authenticator: new IamAuthenticator({
         apikey: process.env.ASSISTANT_IAM_APIKEY,
     }),
-    url: process.env.ASSISTANT_URL,
+    url: 'https://gateway.watsonplatform.net/assistant/api',
 })
 
 function buildMessageElements(newPayload) {
