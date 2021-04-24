@@ -114,7 +114,7 @@ class Watson {
     }
 
     sendMessage(req, res) {
-        if (req.body.message) {
+        if (req.body.saveMessage && req.body.message) {
             mongoUtils.asyncSaveMessage(req.body)
         }
 
