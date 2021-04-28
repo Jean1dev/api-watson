@@ -7,6 +7,7 @@ const assistant = new AssistantV2({
         apikey: process.env.ASSISTANT_IAM_APIKEY,
     }),
     url: 'https://gateway.watsonplatform.net/assistant/api',
+    //disableSslVerification: true
 })
 
 function buildMessageElements(newPayload) {
@@ -61,6 +62,12 @@ function getResponse(responses, gen) {
             innerhtml: title + description + list,
             text: title + gen.description,
             data: result
+        })
+    } else if (gen.response_type === 'suggestion') {
+        responses.push({
+            type: gen.response_type,
+            text: gen.title,
+            data: gen.suggestions
         })
     }
 }
