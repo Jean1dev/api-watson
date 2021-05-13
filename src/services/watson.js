@@ -6,7 +6,7 @@ const assistant = new AssistantV2({
     authenticator: new IamAuthenticator({
         apikey: process.env.ASSISTANT_IAM_APIKEY,
     }),
-    url: 'https://gateway.watsonplatform.net/assistant/api',
+    url: 'https://api.us-south.assistant.watson.cloud.ibm.com/instances/c50aa5e1-86af-4bfc-b101-4b2c661e73b4',
     //disableSslVerification: true
 })
 
